@@ -14,19 +14,28 @@ fun Route.getAllHeroes() {
     get("/boruto/heroes") {
         try {
             val page = call.request.queryParameters["page"]?.toInt() ?: 1
-            require(page in 1..5)
+            val limit = call.request.queryParameters["limit"]?.toInt() ?: 3
 
-            val apiResponse = heroRepository.getAllHeroes(page)
-
-            call.respond(message = apiResponse, status = HttpStatusCode.OK)
+            val apiResponse = heroRepository.getAllHeroes(
+                page = page, limit = limit
+            )
+            call.respond(
+                message = apiResponse,
+                status = HttpStatusCode.OK
+            )
         } catch (_: NumberFormatException) {
             call.respond(
-                message = ApiResponse(success = false, message = "Only numbers allowed"),
+                message = ApiResponse(success = false, message = "Only Numbers Allowed."),
                 status = HttpStatusCode.BadRequest
             )
         } catch (_: IllegalArgumentException) {
             call.respond(
-                message = ApiResponse(success = false, message = "Heroes not found"),
+                message = ApiResponse(success = false, message = "Heroes not Found."),
+                status = HttpStatusCode.NotFound
+            )
+        } catch (e: Exception) {
+            call.respond(
+                message = ApiResponse(success = false, message = e.stackTrace.toString()),
                 status = HttpStatusCode.NotFound
             )
         }
